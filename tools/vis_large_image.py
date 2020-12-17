@@ -76,12 +76,12 @@ def main():
 
     # -- rasterio plotting --
     fig,ax = plt.subplots(figsize=(8,8))
-    plot_layout.plot(ax=ax,alpha=0.5)
     rasterio.plot.show(img,ax=ax)
+    plot_layout.plot(ax=ax,alpha=0.5)
     # patches = [PolygonPatch(poly,edgecolor="red", facecolor="none", linewidth=2) for poly in sampling_areas['geometry']]
     # patches = [PolygonPatch(sampling_areas['geometry'])]
     # ax.add_collection(mpl.collections.PatchCollection(patches, match_original=True))
-    # sampling_areas.plot(ax=ax,column='Sarea_ID')
+    sampling_areas.plot(ax=ax,column='Sarea_ID')
     plt.savefig("./output/vis_large_image.png")
 
 
