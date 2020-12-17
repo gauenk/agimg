@@ -15,22 +15,8 @@ import _init_paths
 from pyutils.vgi import compute_vgi
 from pyutils.misc import get_xyz
 from pyutils.utm import project
-
-def load_jpg_filenames():
-    root = Path("./data/NEPAC_L4_170801_200ft/")
-    path = root/Path("./*JPG")
-    filenames = list(glob.glob(str(path)))
-    return filenames
-
-
-def load_sampling_areas(root):
-    fn = Path("Sampling_areas_test.shp")
-    path = root / fn
-    sampling_areas = gpd.read_file(path)
-    # plot_layout.plot()
-    # plt.savefig("./layout.png",dpi=300,bbox_inches='tight')
-    # plt.close("all")
-    return sampling_areas
+from pyutils.projections import load_image_coordinates
+from datasets.fall_2020_data import load_jpg_filenames,load_sampling_areas
 
 def image_sampling_area_assignment(img_coords,sampling_polygons):
     # lat,lon = info['x'].to_numpy(),info['y'].to_numpy()
@@ -56,16 +42,6 @@ def project_gps(info):
     proj = pd.DataFrame(proj)
     return proj
 
-def load_image_coordinates(image_info):
-    lat,lon = image_info['Latitude'].to_numpy(),image_info['Longitude'].to_numpy()    
-    geom = [Point([lon_i,lat_i,0]) for lat_i,lon_i in zip(lat,lon)]
-    geo_df = gpd.GeoDataFrame(crs = 'EPSG:4326', # this is your coordinate system
-                              geometry = geom)
-    geo_df = geo_df.to_crs('EPSG:32616')
-    coords = geo_df['geometry'].to_numpy()
-    coords = np.array([[np.array(p.x),np.array(p.y)] for p in coords])
-    return coords
-
 def main():
 
     # -- get all filenames --
@@ -76,12 +52,13 @@ def main():
     info = pd.DataFrame([gpsphoto.getGPSData(img_path) for img_path in filenames])
     info['img_path'] = filenames
     img_coords = load_image_coordinates(info) # project
+    print(info)
+    print(img_coords)
 
     # # -- project gps data v2; old --
     # projected_info = project_gps(info)
     # info['x'] = projected_info['x']
     # info['y'] = projected_info['y']
-
 
     # # -- plot gps data; not equal axis --
     # gps = info.sort_values('Latitude')

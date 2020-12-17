@@ -5,7 +5,6 @@ import exifread
 import numpy as np
 
 
-
 def np_divide_ignore(num,den):
     with np.errstate(divide='ignore',invalid='ignore'):
         result = np.true_divide(num,den)
