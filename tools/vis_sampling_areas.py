@@ -3,6 +3,7 @@ from PIL import Image
 from pathlib import Path
 import numpy as np
 import geopandas as gpd
+from shapely.geometry import Point,Polygon
 import matplotlib.pyplot as plt
 from GPSPhoto import gpsphoto
 
@@ -29,6 +30,16 @@ def load_sampling_areas(root):
     # plt.close("all")
     return sampling_areas
 
+def gps_to_crs(gps_coord,crs):
+    # keys = ["Longitude","Latitude","Alititude"]
+    keys = ["Longitude","Latitude"]
+    point = Point([gps_coord[k] for k in keys])
+    gps_coord = gpd.GeoDataFrame({'col1': ['name'], 'geometry':[point]})    
+    gps_coord = gps_coord.set_crs("EPSG:4326")
+    gps_coord = gps_coord.to_crs(crs)
+    gps_coord = np.squeeze(np.array(gps_coord['geometry'][0].xy))
+    return gps_coord
+
 def main():
 
     # -- plot layouts --
@@ -44,7 +55,9 @@ def main():
     # -- load example image --
     img_path = "./data/NEPAC_L4_170801_200ft/DJI_1930.JPG"
     gps_coord = gpsphoto.getGPSData(img_path)
+    gps_coord = gps_to_crs(gps_coord,'EPSG:32616')
     raw_img = np.array(Image.open(img_path))
+    print("Image at {}".format(gps_coord))
 
     # -- plot sampling area and plot layout --
     fig,ax = plt.subplots(figsize=(8,8))

@@ -60,10 +60,10 @@ def normalize_to_reference(geom,ref,pixel_scale):
         z = np.zeros(lon.shape[0])
         lat -= ref.max_lat
         lon -= ref.min_lon
-        lat /= lat_delta
-        lon /= lon_delta
-        lat *= 14961.
-        lon *= 22530.
+        # lat *= 14961.
+        # lon *= 22530.
+        # lat /= lat_delta
+        # lon /= lon_delta
         # lat /= (22530. / lat_delta)
         # lon /= (14961. / lon_delta)
         nmlz_poly = Polygon(np.c_[lon,lat,z])

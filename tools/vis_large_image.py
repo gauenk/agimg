@@ -34,17 +34,31 @@ def main():
     img_fn = load_large_tif_filename(root)
     # Image.MAX_IMAGE_PIXELS = 1 << 36
     # img = Image.open(img_fn)
+    # img = np.array(img)
     img = rasterio.open(img_fn)
-    pixel_scale = (3.04768227457637e-07, 3.04768227457637e-07)
+    print(img.bounds)
+    print(img.crs)
+    print(img.transform)
+    print(img._transform)
+    lat,lon = img._transform[3],img._transform[0]
+    z,l,lon,lat = project([lon,lat])
+    img._transform[3],img._transform[0] = lat,lon
+    # img._transform[3],img._transform[0] = 0,0
+    # img._transform[1],img._transform[5] = 1.,-1.
+    # pixel_scale = np.sqrt(img._transform[1])
+    # img._transform[1],img._transform[5] = pixel_scale,-pixel_scale
+    # print(img.transform)
+    # pixel_scale = (3.04768227457637e-07, 3.04768227457637e-07)
 
     # -- gps projection --
     plot_layout = plot_layout.to_crs('EPSG:32616')
     sampling_areas = sampling_areas.to_crs('EPSG:32616')
     ref_point = find_reference_point(plot_layout)
+    print(ref_point,(lon,lat))
 
     # -- normalize geometry --
-    plot_layout['geometry'] = normalize_to_reference(plot_layout['geometry'],ref_point,pixel_scale)
-    sampling_areas['geometry'] = normalize_to_reference(sampling_areas['geometry'],ref_point,pixel_scale)
+    # plot_layout['geometry'] = normalize_to_reference(plot_layout['geometry'],ref_point,pixel_scale)
+    # sampling_areas['geometry'] = normalize_to_reference(sampling_areas['geometry'],ref_point,pixel_scale)
                 
     # print(plot_layout['geometry'].iloc[0])
     print(sampling_areas['geometry'].iloc[0])
@@ -76,12 +90,24 @@ def main():
 
     # -- rasterio plotting --
     fig,ax = plt.subplots(figsize=(8,8))
-    rasterio.plot.show(img,ax=ax)
     plot_layout.plot(ax=ax,alpha=0.5)
+    sampling_areas.plot(ax=ax,column='Sarea_ID')
+    print(ax.get_ylim(),ax.get_xlim())
+    ymin_a,ymax_a = min(ax.get_ylim()),max(ax.get_ylim())
+    xmin_a,xmax_a = min(ax.get_xlim()),max(ax.get_xlim())
+    rasterio.plot.show(img,ax=ax)
+    print(ax.get_ylim(),ax.get_xlim())
+    ymin_b,ymax_b = min(ax.get_ylim()),max(ax.get_ylim())
+    xmin_b,xmax_b = min(ax.get_xlim()),max(ax.get_xlim())
+    ymin,ymax = min([ymin_a,ymin_b]),max([ymax_a,ymax_b])
+    xmin,xmax = min([xmin_a,xmin_b]),max([xmax_a,xmax_b])
+    print((ymin,ymax),(xmin,xmax))
+    ax.set_ylim(ymin,ymax)
+    ax.set_xlim(xmin,xmax)
+    # ax.imshow(img)
     # patches = [PolygonPatch(poly,edgecolor="red", facecolor="none", linewidth=2) for poly in sampling_areas['geometry']]
     # patches = [PolygonPatch(sampling_areas['geometry'])]
     # ax.add_collection(mpl.collections.PatchCollection(patches, match_original=True))
-    sampling_areas.plot(ax=ax,column='Sarea_ID')
     plt.savefig("./output/vis_large_image.png")
 
 

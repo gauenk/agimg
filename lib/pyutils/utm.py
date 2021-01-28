@@ -23,6 +23,9 @@ def letter(coordinates):
 
 
 def project(coordinates):
+    """
+    coorindates = [lat,lon]
+    """
     z = zone(coordinates)
     l = letter(coordinates)
     if z not in _projections:
